@@ -1,20 +1,70 @@
 import * as THREE from 'three';
-
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xaaddff); // Fondo azul pastel
+//scene.background = new THREE.Color(0xaaddff); // Fondo azul pastel
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setAnimationLoop(animate);
 document.body.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+const verdeOscuro = new THREE.MeshPhysicalMaterial({ color: 0x3e8b3e });
+const verdeClaro = new THREE.MeshPhysicalMaterial({ color: 0x7cc576 });
+const blanco = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+const negro = new THREE.MeshPhysicalMaterial({ color: 0x000000 });
+const rojo = new THREE.MeshPhysicalMaterial({ color: 0xd32f2f });
+const marron = new THREE.MeshPhysicalMaterial({ color: 0x6b4f2f });
 
-const verdeOscuro = new THREE.MeshBasicMaterial({ color: 0x3e8b3e });
-const verdeClaro = new THREE.MeshBasicMaterial({ color: 0x7cc576 });
-const blanco = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const negro = new THREE.MeshBasicMaterial({ color: 0x000000 });
-const rojo = new THREE.MeshBasicMaterial({ color: 0xd32f2f });
-const marron = new THREE.MeshBasicMaterial({ color: 0x6b4f2f });
+const ambiente = new THREE.AmbientLight(0x8a2b2, 10);
+scene.add(ambiente);
+const foco = new THREE.SpotLight(0x8a2b2, 40);
+foco.position.set(0, 4, 8);
+scene.add(foco);
+
+const SpotLightHelper = new THREE.SpotLightHelper(foco);
+scene.add(SpotLightHelper);
+
+const PointLight = new THREE.PointLight(0xffff00, 25, 10); 
+PointLight.position.set(150, -45, -200);
+scene.add(PointLight);
+
+const PointLightHelper = new THREE.PointLightHelper(PointLight);
+scene.add(PointLightHelper);
+
+const estrellas = new THREE.Group();
+const estrellaData = [];
+const shootingStars = [2, 8, 17];
+for (let i = 0; i < 24; i++) {
+  const basePosition = new THREE.Vector3(
+    (Math.random() - 0.5) * 8,
+    2.2 + Math.random() * 2.4,
+    (Math.random() - 0.5) * 8
+  );
+  const intensidad = 0.08 + Math.random() * 0.12;
+  const estrella = new THREE.PointLight(0xffffff, intensidad, 20, 2);
+  estrella.position.copy(basePosition);
+  estrellas.add(estrella);
+
+  const brillo = new THREE.Mesh(
+    new THREE.SphereGeometry(0.04, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.7 })
+  );
+  brillo.position.copy(basePosition);
+  estrellas.add(brillo);
+
+  estrellaData.push({
+    estrella,
+    brillo,
+    basePosition,
+    sway: 0.4 + Math.random() * 0.4,
+    isShooting: shootingStars.includes(i),
+    active: false,
+    direction: new THREE.Vector3(),
+    speed: 0.14 + Math.random() * 0.06
+  });
+}
+scene.add(estrellas);
 
 function crearCubito(ancho, alto, profundo, material) {
   return new THREE.Mesh(new THREE.BoxGeometry(ancho, alto, profundo), material);
@@ -147,11 +197,11 @@ function crearFlor(posX, posZ) {
   scene.add(flor);
 }
 
-const grisClaro = new THREE.MeshBasicMaterial({ color: 0xcccccc });
-const grisMedio = new THREE.MeshBasicMaterial({ color: 0x888888 });
-const grisOscuro = new THREE.MeshBasicMaterial({ color: 0x444444 });
-const hierbaAmarilla = new THREE.MeshBasicMaterial({ color: 0xd4af37 });
-const pastoVerde = new THREE.MeshBasicMaterial({ color: 0x4caf50 });
+const grisClaro = new THREE.MeshPhysicalMaterial({ color: 0xcccccc });
+const grisMedio = new THREE.MeshPhysicalMaterial({ color: 0x888888 });
+const grisOscuro = new THREE.MeshPhysicalMaterial({ color: 0x444444 });
+const hierbaAmarilla = new THREE.MeshPhysicalMaterial({ color: 0xd4af37 });
+const pastoVerde = new THREE.MeshPhysicalMaterial({ color: 0x4caf50 });
 
 crearFlor(-0.8, 1.2);
 crearFlor(0.5, -1.0);
@@ -216,7 +266,7 @@ crearNube(-3, 3, -2);
 crearNube(2.5, 3.5, 1.5);
 
 // Suelo simple
-const suelo = crearCubito(8, 0.1, 6, new THREE.MeshBasicMaterial({ color: 0x7b5f3b }));
+const suelo = crearCubito(8, 0.1, 6, new THREE.MeshPhysicalMaterial({ color: 0x7b5f3b }));
 suelo.position.set(0.5, -1.4, 0);
 scene.add(suelo);
 
@@ -224,10 +274,53 @@ camera.position.set(0, 1.3, 8);
 camera.lookAt(0, 0.7, 0);
 
 function animate(time) {
+  controls.update();
+
+  const orbitRadius = 1;
+  const orbitSpeed = 0.0012;
+  const angle = time * orbitSpeed;
+  PointLight.position.x = Math.cos(angle) * orbitRadius - 0.2;
+  PointLight.position.z = Math.sin(angle) * orbitRadius;
+  PointLight.position.y = 2 + Math.sin(time / 1200) * 0.1;
+
+  estrellaData.forEach((data, idx) => {
+    if (data.isShooting) {
+      if (!data.active) {
+        if (Math.random() < 0.0025) {
+          data.active = true;
+          data.estrella.intensity = 0.75 + Math.random() * 0.35;
+          data.direction.set(
+            (Math.random() > 0.5 ? -1 : 1),
+            -0.35,
+            (Math.random() - 0.5) * 0.5
+          ).normalize();
+          const startX = data.direction.x > 0 ? -6 : 6;
+          data.estrella.position.set(startX, 7.5 + Math.random() * 0.8, (Math.random() - 0.5) * 6);
+          data.brillo.position.copy(data.estrella.position);
+        }
+      } else {
+        data.estrella.position.addScaledVector(data.direction, data.speed);
+        data.brillo.position.copy(data.estrella.position);
+        if (data.estrella.position.y < 2.8 || Math.abs(data.estrella.position.x) > 7 || Math.abs(data.estrella.position.z) > 7) {
+          data.active = false;
+          data.estrella.intensity = 0.08 + Math.random() * 0.12;
+          data.estrella.position.copy(data.basePosition);
+          data.brillo.position.copy(data.basePosition);
+        }
+      }
+    } else {
+      data.estrella.position.x = data.basePosition.x + Math.sin(time * 0.0007 + idx) * data.sway;
+      data.estrella.position.z = data.basePosition.z + Math.cos(time * 0.0008 + idx * 1.2) * data.sway;
+      data.estrella.position.y = data.basePosition.y + Math.sin(time * 0.0011 + idx * 0.9) * 0.2;
+      data.brillo.position.copy(data.estrella.position);
+    }
+  });
+
+  PointLightHelper.update();
+
   cola.rotation.z = -0.25 + Math.sin(time / 700) * 0.12;
   pupila.position.y = 1.2 + Math.sin(time / 300) * 0.02;
   pupila.position.x = -2.05 + Math.sin(time / 800) * 0.01;
   renderer.render(scene, camera);
 }
-const ambiente = new THREE.AmbientLight(0x485621, 0.6);
-scene.add(ambiente);
+

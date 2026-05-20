@@ -1,37 +1,231 @@
 import * as THREE from 'three';
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+scene.background = new THREE.Color(0xaaddff); // Fondo azul pastel
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setAnimationLoop( animate );
-document.body.appendChild( renderer.domElement );
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setAnimationLoop(animate);
+document.body.appendChild(renderer.domElement);
 
-const geometry = new THREE.BoxGeometry( 1, 4, 3 ); 
-const loader = new THREE.TextureLoader();
-const xd = loader.load("xd.jfif")
-const material = new THREE.MeshBasicMaterial( { map:xd, color: 0x963245 } );
-const cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+const verdeOscuro = new THREE.MeshBasicMaterial({ color: 0x3e8b3e });
+const verdeClaro = new THREE.MeshBasicMaterial({ color: 0x7cc576 });
+const blanco = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const negro = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const rojo = new THREE.MeshBasicMaterial({ color: 0xd32f2f });
+const marron = new THREE.MeshBasicMaterial({ color: 0x6b4f2f });
 
-// Largo - Ancho - Profundo
-const geometriaCubito1 = new THREE.BoxGeometry( 1, 1, 1 );
-// Material
-const materialCubito1 = new THREE.MeshBasicMaterial();
-// Mash
-const cubito1 =
-new THREE.Mesh( geometriaCubito1, materialCubito1 );
-scene.add (cubito1)
-cubito1.position.x=2
+function crearCubito(ancho, alto, profundo, material) {
+  return new THREE.Mesh(new THREE.BoxGeometry(ancho, alto, profundo), material);
+}
 
-camera.position.z = 5;
+// Grupo del dinosaurio
+const trex = new THREE.Group();
+scene.add(trex);
 
-function animate( time ) {
+// Hacerlo más erguido
+trex.rotation.z = -0.45;
 
-  cube.rotation.x = time / 2000;
-  cube.rotation.y = time / 1000;
+// Cuerpo
+const cuerpo = crearCubito(2.8, 1.6, 1, verdeOscuro);
+cuerpo.position.set(0.4, 0.3, 0);
+trex.add(cuerpo);
 
-  renderer.render( scene, camera );
+// Barriga clara
+const barriga = crearCubito(2, 1.0, 0.8, verdeClaro);
+barriga.position.set(0.4, 0.1, 0);
+trex.add(barriga);
 
+// Cuello
+const cuello = crearCubito(0.6, 0.9, 0.9, verdeOscuro);
+cuello.position.set(-1.1, 0.8, 0);
+trex.add(cuello);
+
+// Cabeza cuadrada
+const cabeza = crearCubito(1.1, 1, 1, verdeOscuro);
+cabeza.position.set(-1.95, 1.25, 0);
+trex.add(cabeza);
+
+// Hocico
+const hocico = crearCubito(0.7, 0.4, 1, verdeOscuro);
+hocico.position.set(-2.55, 0.95, 0);
+trex.add(hocico);
+
+// Mandíbula inferior
+const mandibula = crearCubito(0.7, 0.3, 0.9, verdeOscuro);
+mandibula.position.set(-2.55, 0.65, 0);
+trex.add(mandibula);
+
+// Dientes
+const diente1 = crearCubito(0.1, 0.15, 0.05, blanco);
+diente1.position.set(-2.1, 0.7, 0.45);
+trex.add(diente1);
+const diente2 = crearCubito(0.1, 0.15, 0.05, blanco);
+diente2.position.set(-2.4, 0.7, 0.45);
+trex.add(diente2);
+
+// Ojo grueso
+const ojo = crearCubito(0.25, 0.25, 0.05, blanco);
+ojo.position.set(-2.05, 1.2, 0.45);
+trex.add(ojo);
+const pupila = crearCubito(0.12, 0.12, 0.02, negro);
+pupila.position.set(-2.05, 1.2, 0.55);
+trex.add(pupila);
+
+// Manchas verdes claras
+const mancha1 = crearCubito(0.3, 0.3, 0.05, rojo);
+mancha1.position.set(0.2, 0.6, 0.5);
+trex.add(mancha1);
+const mancha2 = crearCubito(0.25, 0.25, 0.05, verdeClaro);
+mancha2.position.set(0.8, 0.4, 0.5);
+trex.add(mancha2);
+const mancha3 = crearCubito(0.2, 0.2, 0.05, verdeClaro);
+mancha3.position.set(-0.2, 0.2, 0.5);
+trex.add(mancha3);
+const mancha4 = crearCubito(0.15, 0.15, 0.05, verdeClaro);
+mancha4.position.set(-1.3, 1.0, 0.45);
+trex.add(mancha4);
+const mancha5 = crearCubito(0.2, 0.2, 0.05, verdeClaro);
+mancha5.position.set(-1.7, 1.5, 0.45);
+trex.add(mancha5);
+
+// Cola segmentada
+const cola = new THREE.Group();
+cola.position.set(1.8, 0.6, 0);
+cola.rotation.z = -0.25;
+trex.add(cola);
+const cola1 = crearCubito(0.9, 0.4, 0.9, verdeOscuro);
+cola1.position.set(0.4, 0.15, 0);
+cola.add(cola1);
+const cola2 = crearCubito(0.8, 0.35, 0.8, verdeOscuro);
+cola2.position.set(1.05, 0.25, 0);
+cola.add(cola2);
+const cola3 = crearCubito(0.7, 0.3, 0.7, verdeOscuro);
+cola3.position.set(1.7, 0.35, 0);
+cola.add(cola3);
+
+// Patas traseras
+const pataIzq = crearCubito(0.45, 1.1, 0.5, verdeOscuro);
+pataIzq.position.set(0.4, -1.15, 0.18);
+trex.add(pataIzq);
+const pataDer = crearCubito(0.45, 1.1, 0.5, verdeOscuro);
+pataDer.position.set(0.4, -1.15, -0.18);
+trex.add(pataDer);
+
+// Pies cuadrados
+const pieIzq = crearCubito(0.5, 0.2, 0.7, verdeOscuro);
+pieIzq.position.set(0.4, -1.45, 0.18);
+trex.add(pieIzq);
+const pieDer = crearCubito(0.5, 0.2, 0.7, verdeOscuro);
+pieDer.position.set(0.4, -1.45, -0.18);
+trex.add(pieDer);
+
+// Brazos pequeños estilo T-Rex
+const brazoIzq = crearCubito(0.2, 0.4, 0.2, verdeOscuro);
+brazoIzq.position.set(-0.4, 0.05, 0.3);
+trex.add(brazoIzq);
+const brazoDer = crearCubito(0.2, 0.4, 0.2, verdeOscuro);
+brazoDer.position.set(-0.4, 0.05, -0.3);
+trex.add(brazoDer);
+
+// Cola curva de perfil
+const colaBase = crearCubito(0.4, 0.4, 0.4, verdeOscuro);
+colaBase.position.set(2.5, 0.9, 0);
+trex.add(colaBase);
+
+// Flor roja estilo Minecraft
+function crearFlor(posX, posZ) {
+  const flor = new THREE.Group();
+  const tallo = crearCubito(0.1, 0.6, 0.1, marron);
+  tallo.position.y = -0.7;
+  flor.add(tallo);
+  const centro = crearCubito(0.2, 0.2, 0.2, rojo);
+  centro.position.y = -0.4;
+  flor.add(centro);
+  flor.position.set(posX, 0.1, posZ);
+  scene.add(flor);
+}
+
+const grisClaro = new THREE.MeshBasicMaterial({ color: 0xcccccc });
+const grisMedio = new THREE.MeshBasicMaterial({ color: 0x888888 });
+const grisOscuro = new THREE.MeshBasicMaterial({ color: 0x444444 });
+const hierbaAmarilla = new THREE.MeshBasicMaterial({ color: 0xd4af37 });
+const pastoVerde = new THREE.MeshBasicMaterial({ color: 0x4caf50 });
+
+crearFlor(-0.8, 1.2);
+crearFlor(0.5, -1.0);
+
+// Agregar rocas con tonos grises
+const rocas = [
+  { pos: [-2, -1.2, 0.5], size: [0.4, 0.3, 0.4], mat: grisClaro },
+  { pos: [1.5, -1.2, -0.8], size: [0.5, 0.4, 0.3], mat: grisMedio },
+  { pos: [-1.2, -1.2, -1.0], size: [0.3, 0.25, 0.35], mat: grisOscuro },
+  { pos: [2.2, -1.2, 0.3], size: [0.45, 0.35, 0.4], mat: grisClaro },
+  { pos: [0.8, -1.2, 1.2], size: [0.35, 0.3, 0.25], mat: grisMedio }
+];
+
+rocas.forEach(roca => {
+  const r = crearCubito(roca.size[0], roca.size[1], roca.size[2], roca.mat);
+  r.position.set(roca.pos[0], roca.pos[1], roca.pos[2]);
+  scene.add(r);
+});
+
+// Agregar hierba amarillenta
+for (let i = 0; i < 15; i++) {
+  const hierba = crearCubito(0.05, 0.2, 0.05, hierbaAmarilla);
+  hierba.position.set(
+    (Math.random() - 0.5) * 6,
+    -1.1 + Math.random() * 0.1,
+    (Math.random() - 0.5) * 4
+  );
+  scene.add(hierba);
+}
+
+// Agregar más pasto verde
+for (let i = 0; i < 30; i++) {
+  const pasto = crearCubito(0.03, 0.15, 0.03, pastoVerde);
+  pasto.position.set(
+    (Math.random() - 0.5) * 8,
+    -1.1 + Math.random() * 0.1,
+    (Math.random() - 0.5) * 6
+  );
+  scene.add(pasto);
+}
+
+// Nubes blancas grandes
+function crearNube(posX, posY, posZ) {
+  const nube = new THREE.Group();
+  const cubosNube = [
+    { pos: [0, 0, 0], size: [1.5, 0.8, 1] },
+    { pos: [0.8, 0.2, 0], size: [1, 0.6, 0.8] },
+    { pos: [-0.7, 0.1, 0.3], size: [0.9, 0.7, 0.9] },
+    { pos: [0.3, 0.3, -0.4], size: [0.8, 0.5, 0.7] },
+    { pos: [-0.4, 0.4, -0.2], size: [0.7, 0.6, 0.6] }
+  ];
+  cubosNube.forEach(cubo => {
+    const c = crearCubito(cubo.size[0], cubo.size[1], cubo.size[2], blanco);
+    c.position.set(cubo.pos[0], cubo.pos[1], cubo.pos[2]);
+    nube.add(c);
+  });
+  nube.position.set(posX, posY, posZ);
+  scene.add(nube);
+}
+
+crearNube(-3, 3, -2);
+crearNube(2.5, 3.5, 1.5);
+
+// Suelo simple
+const suelo = crearCubito(8, 0.1, 6, new THREE.MeshBasicMaterial({ color: 0x7b5f3b }));
+suelo.position.set(0.5, -1.4, 0);
+scene.add(suelo);
+
+camera.position.set(0, 1.3, 8);
+camera.lookAt(0, 0.7, 0);
+
+function animate(time) {
+  cola.rotation.z = -0.25 + Math.sin(time / 700) * 0.12;
+  pupila.position.y = 1.2 + Math.sin(time / 300) * 0.02;
+  pupila.position.x = -2.05 + Math.sin(time / 800) * 0.01;
+  renderer.render(scene, camera);
 }

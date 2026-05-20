@@ -229,3 +229,5 @@ function animate(time) {
   pupila.position.x = -2.05 + Math.sin(time / 800) * 0.01;
   renderer.render(scene, camera);
 }
+const ambiente = new THREE.AmbientLight(0x485621, 0.6);
+scene.add(ambiente);
